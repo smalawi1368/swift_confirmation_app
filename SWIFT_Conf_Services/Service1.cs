@@ -256,10 +256,10 @@ namespace SWIFT_Conf_Services
                     for (int i = 1; i <= fCount; i++)
                     {
 
-                        string RecString = File.ReadAllText(@"D:\EMS\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\1.txt");
+                        string RecString = File.ReadAllText(@"D:\EMS\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\" + i + ".txt");
                         //int RecIndex = RecString.LastIndexOf(RectDeclimator);
                         int MT103position = RecString.IndexOf("I103");
-                        string bic_code = RecString.Substring(MT103position + 4, 11);
+                        string bic_code = RecString.Substring(MT103position + 4, 8);
                         //------------------------------------READ BANK NAME FROM FLEXCUBE----------------------------
 
                         if (con == null || con.State != ConnectionState.Open)
@@ -267,7 +267,7 @@ namespace SWIFT_Conf_Services
                             con.Open();
                         }
                         //              
-                        string queryR = "select bank_name from fccprod.ISTM_BIC_DIRECTORY@fc where bic_code like '" + bic_code + "'";
+                        string queryR = "select bank_name from fccprod.ISTM_BIC_DIRECTORY@fc where bic_code like '%" + bic_code + "%'";
 
                         OracleCommand cmdR = new OracleCommand(queryR, con);
                         OracleDataReader datardR = cmdR.ExecuteReader();
