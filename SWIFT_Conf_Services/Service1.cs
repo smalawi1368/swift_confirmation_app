@@ -147,7 +147,7 @@ namespace SWIFT_Conf_Services
                         con.Open();
                     }
                     //              
-                    string queryR = "SELECT bank_name FROM fccprod.ISTM_BIC_DIRECTORY@fc WHERE bic_code LIKE '" + bic_code + "'";
+                    string queryR = "SELECT bank_name FROM fccprod.ISTM_BIC_DIRECTORY@fc WHERE bic_code like '" + bic_code + "'";
 
                     OracleCommand cmdR = new OracleCommand(queryR, con);
                     OracleDataReader datardR = cmdR.ExecuteReader();
