@@ -468,9 +468,9 @@ namespace SWIFT_Conf_Services
 
             try
             {
-                string HostAdd = "192.0.0.4";// ConfigurationManager.AppSettings["Host"].ToString();
-                string FromEmailid = "alerts@bankaib.com";// ConfigurationManager.AppSettings["FromMail"].ToString();
-                string Pass = "Aib@123$";// ConfigurationManager.AppSettings["Password"].ToString();
+                string HostAdd = ConfigurationManager.AppSettings["Host"].ToString();//192.0.0.4
+                string FromEmailid = ConfigurationManager.AppSettings["FromEmail"].ToString();//alrts@bankaib.af
+                string Pass = ConfigurationManager.AppSettings["Pass"].ToString();//Aib@123$
                 MailMessage mailMessage = new MailMessage();
                 mailMessage.From = new MailAddress(FromEmailid); //From Email Id  
                 mailMessage.Subject = Subj;
@@ -478,12 +478,12 @@ namespace SWIFT_Conf_Services
                 Attachment data = new Attachment(
                 attach, MediaTypeNames.Application.Octet); mailMessage.IsBodyHtml = true;
                 mailMessage.Attachments.Add(data);
-                //string[] ToMuliId = ToEmail.Split(',');
+                string[] ToMuliId = ToEmail.Split(',',';');
 
-                //foreach (string ToEMailId in ToMuliId)
-                //{
-                    mailMessage.To.Add(new MailAddress("mustafa.alawi@aib.af")); //adding multiple TO Email Id  
-                //}
+                foreach (string ToEMailId in ToMuliId)
+                {
+                    mailMessage.To.Add(new MailAddress(ToEMailId)); //adding multiple TO Email Id  
+                }
                 //network and security related credentials
                 NetworkCredential NetworkCred = new NetworkCredential();
                 NetworkCred.UserName = mailMessage.From.Address;
@@ -491,7 +491,7 @@ namespace SWIFT_Conf_Services
                 SmtpClient sC = new SmtpClient(HostAdd);
                 sC.EnableSsl = false;
                 sC.Port = 25;
-                sC.Credentials = new NetworkCredential("alerts@bankaib.com", "Aib@123$");
+                sC.Credentials = new NetworkCredential(FromEmailid, Pass);
                 //sC.Send(mailMessage);
                 sC.Send(mailMessage);
                 //sending Email  

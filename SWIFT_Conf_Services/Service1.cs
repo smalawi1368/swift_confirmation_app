@@ -39,7 +39,7 @@ namespace SWIFT_Conf_Services
         protected override void OnStart(string[] args)
         {
             tm = new Timer();
-            tm.Interval = 10000;
+            tm.Interval = int.Parse(ConfigurationManager.AppSettings["Interval"].ToString());
             tm.Elapsed += new ElapsedEventHandler(this.Timer_tick);
             tm.Enabled = true;
             try
@@ -73,13 +73,13 @@ namespace SWIFT_Conf_Services
             string monthName = (CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(PerMonth)).ToLower();
             string dateFormat = "swift_" + DateTime.Now.Year + "_" + monthName.Substring(0, 3) + "_" + DateTime.Now.Day;
 
-            DirectoryInfo dir = new DirectoryInfo(@"D:\EMS\telex\Telex_pending");//
+            DirectoryInfo dir = new DirectoryInfo(@"\\192.168.201.6\telex\Telex_pending");//
             FileInfo[] Files = dir.GetFiles("*.out");
 
             foreach (FileInfo file in Files)
             {
                 string[] separatingStrings = { "{1:" };
-                string contents = File.ReadAllText(@"D:\EMS\telex\Telex_pending\" + file.Name);
+                string contents = File.ReadAllText(@"\\192.168.201.6\telex\Telex_pending\" + file.Name);
 
                 string[] words = contents.Split(separatingStrings, System.StringSplitOptions.RemoveEmptyEntries);
                 string FolderName = file.Name.Substring(1, 8);
@@ -90,23 +90,23 @@ namespace SWIFT_Conf_Services
                     string strVal = words[i];
 
                     //COPY STRVALTO I.TXT AND SAVE
-                    Directory.CreateDirectory(@"D:\EMS\Telex\" + dateFormat + @"\" + FolderName);
-                    File.WriteAllText(@"D:\EMS\Telex\" + dateFormat + @"\" + FolderName + @"\" + i + ".txt", "{1:"+strVal);
+                    Directory.CreateDirectory(@"\\192.168.201.6\Telex\" + dateFormat + @"\" + FolderName);
+                    File.WriteAllText(@"\\192.168.201.6\Telex\" + dateFormat + @"\" + FolderName + @"\" + i + ".txt", "{1:"+strVal);
                     //EMPTY STRVAL FOR NEXT VALUE
                     strVal = String.Empty;
                 }
-                try { File.Move(@"D:\EMS\telex\Telex_pending\" + file.Name, @"D:\EMS\Telex\Processed\" + file.Name); }
+                try { File.Move(@"\\192.168.201.6\telex\Telex_pending\" + file.Name, @"\\192.168.201.6\Telex\Processed\" + file.Name); }
                 catch (Exception exc)
                 {
                     if (exc.Message.Contains("Cannot create a file when that file already exists"))
                     {
                         SwiftConfClass.WriteAppLogs(string.Format("file: {0} already exist in processed folder. moving to duplicate folder ...", file.Name));
-                        try { File.Move(@"D:\EMS\Telex\" + file.Name, @"D:\EMS\Telex\Processed\duplicate\" + file.Name); }
+                        try { File.Move(@"\\192.168.201.6\Telex\" + file.Name, @"\\192.168.201.6\Telex\Processed\duplicate\" + file.Name); }
                         catch (Exception _exc)
                         {
                             if (exc.Message.Contains("Cannot create a file when that file already exists"))
                             {
-                                SwiftConfClass.WriteAppLogs(string.Format("file: {0} already exist in duplicate folder. deleting file ...", file.Name));
+                                SwiftConfClass.WriteAppLogs(string.Format("file: {0} already exist in duplicate folder. deleting the file ...", file.Name));
                                 file.Delete();
                                 return;
                             }
@@ -119,7 +119,7 @@ namespace SWIFT_Conf_Services
                         SwiftConfClass.WriteAppLogs(exc.Message);
                 }
 
-                File.Delete(@"D:\EMS\Telex\" + dateFormat + @"\" + FolderName + @"\0.txt");
+                File.Delete(@"\\192.168.201.6\Telex\" + dateFormat + @"\" + FolderName + @"\0.txt");
             }//ENDOFFOREEACH
              //-----------------------------------------------
 
@@ -127,7 +127,7 @@ namespace SWIFT_Conf_Services
             foreach (DataRow dr in FileData_tbl.Rows)
             {
                 //FIND NUMBER OF FILE IN A DIRECTORY
-                string path = @"D:\EMS\Telex\" + dateFormat + @"\" + dr["FileName"].ToString();
+                string path = @"\\192.168.201.6\Telex\" + dateFormat + @"\" + dr["FileName"].ToString();
                 int fCount = Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly).Length;
                 SwiftConfClass.WriteAppLogs("<<<       FILE " + dr["FileName"].ToString() + "out" + " IS PROGRESSING      >>>");
                 //-----------------------WHEN THERE IS A FILE (only on file)---------------------------
@@ -136,7 +136,7 @@ namespace SWIFT_Conf_Services
 
                     //------------------------------------
                     //string RectDeclimator = "{2:";
-                    string RecString = File.ReadAllText(@"D:\EMS\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\1.txt");
+                    string RecString = File.ReadAllText(@"\\192.168.201.6\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\1.txt");
                     //int RecIndex = RecString.LastIndexOf(RectDeclimator);
                     int MT103position = RecString.IndexOf("I103");
                     string bic_code = RecString.Substring(MT103position + 4, 11);
@@ -160,17 +160,17 @@ namespace SWIFT_Conf_Services
 
                     //-------------------------------------
                     string accountDeclimator = ":50K:/";
-                    string accountString = File.ReadAllText(@"D:\EMS\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\1.txt");
+                    string accountString = File.ReadAllText(@"\\192.168.201.6\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\1.txt");
                     int accIndex = accountString.LastIndexOf(accountDeclimator);
                     string account = accountString.Substring(accIndex + 6, 16);
                     //-------------------------------------
                     string murDeclimator = "{108:";
-                    string murString = File.ReadAllText(@"D:\EMS\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\1.txt");
+                    string murString = File.ReadAllText(@"\\192.168.201.6\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\1.txt");
                     int murIndex = murString.LastIndexOf(murDeclimator);
                     string mur = murString.Substring(murIndex + 5, 16);
                     //------------------------------FIND UTER-------------------------------------------
                     string uterDeclimator = "{121:";
-                    string uterString = File.ReadAllText(@"D:\EMS\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\1.txt");
+                    string uterString = File.ReadAllText(@"\\192.168.201.6\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\1.txt");
                     int uterIndex = uterString.LastIndexOf(uterDeclimator);
                     string uter = uterString.Substring(uterIndex + 5, 36);
                     //---------------------------------------------------------------------------
@@ -190,7 +190,7 @@ namespace SWIFT_Conf_Services
                     {
                         CustomeEmail = dtrow["udf_3"].ToString();
                     }
-                    path = @"D:\EMS\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\1.txt";
+                    path = @"\\192.168.201.6\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\1.txt";
                     //generate pdf file
                     string LongMessage;
                     using (var streamReader = new StreamReader(path))
@@ -227,7 +227,7 @@ namespace SWIFT_Conf_Services
                     pdfRenderer.Document = document;
                     pdfRenderer.RenderDocument();
                     // Save the document...
-                    string filename = @"D:\EMS\Telex\pdf\" + @"\" + uter + ".pdf";
+                    string filename = @"\\192.168.201.6\Telex\pdf\" + @"\" + uter + ".pdf";
                     try
                     {
                         pdfRenderer.PdfDocument.Save(filename);
@@ -256,7 +256,7 @@ namespace SWIFT_Conf_Services
                     for (int i = 1; i <= fCount; i++)
                     {
 
-                        string RecString = File.ReadAllText(@"D:\EMS\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\" + i + ".txt");
+                        string RecString = File.ReadAllText(@"\\192.168.201.6\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\" + i + ".txt");
                         //int RecIndex = RecString.LastIndexOf(RectDeclimator);
                         int MT103position = RecString.IndexOf("I103");
                         string bic_code = RecString.Substring(MT103position + 4, 8);
@@ -279,17 +279,17 @@ namespace SWIFT_Conf_Services
                         }
                         //-------------------------------------------------------
                         string accountDeclimator = ":50K:/";
-                        string accountString = File.ReadAllText(@"D:\EMS\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\" + i + ".txt");
+                        string accountString = File.ReadAllText(@"\\192.168.201.6\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\" + i + ".txt");
                         int accIndex = accountString.LastIndexOf(accountDeclimator);
                         string account = accountString.Substring(accIndex + 6, 16);
                         //-------------------------------------
                         string murDeclimator = "{108:";
-                        string murString = File.ReadAllText(@"D:\EMS\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\" + i + ".txt");
+                        string murString = File.ReadAllText(@"\\192.168.201.6\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\" + i + ".txt");
                         int murIndex = murString.LastIndexOf(murDeclimator);
                         string mur = murString.Substring(murIndex + 5, 16);
                         //------------------------------FIND UTER-------------------------------------------
                         string uterDeclimator = "{121:";
-                        string uterString = File.ReadAllText(@"D:\EMS\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\" + i + ".txt");
+                        string uterString = File.ReadAllText(@"\\192.168.201.6\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\" + i + ".txt");
                         int uterIndex = uterString.LastIndexOf(uterDeclimator);
                         string uter = uterString.Substring(uterIndex + 5, 36);
                         cust_no = account.Substring(7, 7);
@@ -310,7 +310,7 @@ namespace SWIFT_Conf_Services
                         {
                             CustomeEmail = dtrow["udf_3"].ToString();
                         }
-                        path = @"D:\EMS\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\" + i + ".txt";
+                        path = @"\\192.168.201.6\Telex\" + dateFormat + @"\" + dr["FileName"].ToString() + @"\" + i + ".txt";
                         //generate pdf file
                         string LongMessage;
                         using (var streamReader = new StreamReader(path))
@@ -347,7 +347,7 @@ namespace SWIFT_Conf_Services
                         pdfRenderer.Document = document;
                         pdfRenderer.RenderDocument();
                         // Save the document...
-                        string filename = @"D:\EMS\Telex\pdf\" + @"\" + uter + ".pdf";
+                        string filename = @"\\192.168.201.6\Telex\pdf\" + @"\" + uter + ".pdf";
                         try
                         {
                             pdfRenderer.PdfDocument.Save(filename);
@@ -377,10 +377,10 @@ namespace SWIFT_Conf_Services
             section.PageSetup.LeftMargin = 50;
             Paragraph header = section.Headers.Primary.AddParagraph();
             MigraDoc.DocumentObjectModel.Shapes.Image img = new MigraDoc.DocumentObjectModel.Shapes.Image();
-            header.AddImage(@"D:\EMS\Telex\white.png");
+            header.AddImage(@"\\192.168.201.6\Telex\white.png");
             Paragraph paragraph = section.AddParagraph();
             MigraDoc.DocumentObjectModel.Shapes.Image img2 = new MigraDoc.DocumentObjectModel.Shapes.Image();
-            header.AddImage(@"D:\EMS\Telex\logo.png");
+            header.AddImage(@"\\192.168.201.6\Telex\logo.png");
             Paragraph paragraph2 = section.AddParagraph();
             paragraph.Format.Font.Color = MigraDoc.DocumentObjectModel.Color.FromCmyk(0, 0, 0, 100);
             paragraph.Format.Font.Name = "Courier New";
